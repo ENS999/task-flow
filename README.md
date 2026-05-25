@@ -18,6 +18,7 @@ A task management API built with FastAPI. Features include task CRUD, categories
 - **Testing:** pytest (13 tests)
 - **Containerization:** Docker
 - **Deployment:** Render
+- **CI:** GitHub Actions
 
 ---
 
