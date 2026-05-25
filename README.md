@@ -1,5 +1,7 @@
 # Task-flow API
 
+[![Run Tests](https://github.com/ENS999/task-flow/actions/workflows/test.yml/badge.svg)](https://github.com/ENS999/task-flow/actions/workflows/test.yml)
+
 任務管理系統，透過 FastAPI 實現 RESTful API。功能包含：任務 CRUD、分類與標籤管理、狀態流轉控制（done 不可回退）、篩選 / 排序 / 分頁、JWT 認證與授權、13 項整合測試。
 
 A task management API built with FastAPI. Features include task CRUD, categories, tags, status flow control (todo → in_progress → done), filtering, sorting, pagination, and JWT authentication.
