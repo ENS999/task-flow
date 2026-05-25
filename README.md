@@ -28,6 +28,9 @@ A task management API built with FastAPI. Features include task CRUD, categories
 
 ```
 task-flow/
+├── .github/
+│   └── workflows/
+│       └── test.yml        # CI: auto run tests
 ├── main.py
 ├── config.py           # Environment variables (SSOT)
 ├── manager.py          # Manager (business logic)
