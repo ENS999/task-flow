@@ -19,6 +19,7 @@ jobs:
           - 5432:5432
 
     env:
+      ENV: development
       DB_HOST: localhost
       DB_PORT: 5432
       DB_NAME: taskflow_test

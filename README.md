@@ -6,7 +6,7 @@
 
 A task management API built with FastAPI. Features include task CRUD, categories, tags, status flow control (todo → in_progress → done), filtering, sorting, pagination, and JWT authentication.
 
-**Live Demo:** https://task-flow-8la9.onrender.com/docs
+**Live Demo:** https://task-flow-8la9.onrender.com
 
 ---
 
@@ -21,6 +21,7 @@ A task management API built with FastAPI. Features include task CRUD, categories
 - **Containerization:** Docker
 - **Deployment:** Render
 - **CI:** GitHub Actions
+- Environment-based config (dev/prod): API docs, CORS, error handling
 
 ---
 

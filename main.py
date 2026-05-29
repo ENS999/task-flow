@@ -39,6 +39,10 @@ if ENV == "production":
 
 manager.create_all_table()
 
+@app.get("/")
+def health_check():
+    return {"status": "ok", "project": "task-flow"}
+
 app.include_router(auth_router)
 app.include_router(tasks_router)
 app.include_router(categories_router)
