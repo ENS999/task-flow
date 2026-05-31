@@ -1,4 +1,4 @@
-from manager import manager
+from manager import Manager
 from fastapi import FastAPI
 from routes.auth import router as auth_router
 from routes.tasks import router as tasks_router
@@ -37,7 +37,9 @@ if ENV == "production":
             content={"detail": "Internal server error"}
         )
 
-manager.create_all_table()
+init_manager = Manager()
+init_manager.create_all_table()
+init_manager.close()
 
 @app.get("/")
 def health_check():

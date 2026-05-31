@@ -230,4 +230,9 @@ class Manager:
             self.rollback()
             raise
 
-manager = Manager()
+def get_manager():
+    mgr = Manager()
+    try:
+        yield mgr
+    finally:
+        mgr.close()

@@ -3,15 +3,18 @@ os.environ["DB_NAME"] = "taskflow_test"
 
 from fastapi.testclient import TestClient
 from main import app
-from manager import manager
+from manager import Manager
 
 client = TestClient(app)
-manager.cursor.execute("DELETE FROM task_tags")
-manager.cursor.execute("DELETE FROM tasks")
-manager.cursor.execute("DELETE FROM categories")
-manager.cursor.execute("DELETE FROM tags")
-manager.cursor.execute("DELETE FROM users")
-manager.commit()
+
+cleanup_manager = Manager()
+cleanup_manager.cursor.execute("DELETE FROM task_tags")
+cleanup_manager.cursor.execute("DELETE FROM tasks")
+cleanup_manager.cursor.execute("DELETE FROM categories")
+cleanup_manager.cursor.execute("DELETE FROM tags")
+cleanup_manager.cursor.execute("DELETE FROM users")
+cleanup_manager.commit()
+cleanup_manager.close()
 
 def register_and_login(name, password):
     reg = client.post("/register", json={
