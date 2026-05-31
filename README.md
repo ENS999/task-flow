@@ -6,7 +6,10 @@
 
 A task management API built with FastAPI. Features include task CRUD, categories, tags, status flow control (todo → in_progress → done), filtering, sorting, pagination, and JWT authentication.
 
-**Live Demo:** https://task-flow-8la9.onrender.com
+**Deployment:** Live on Render — https://task-flow-8la9.onrender.com
+
+> The live URL serves a health-check endpoint. Interactive API docs (Swagger) are disabled in production as a security measure.
+> See the API Endpoints table below, or run locally (see "How to Run") to explore the full docs at /docs.
 
 ---
 
@@ -21,7 +24,88 @@ A task management API built with FastAPI. Features include task CRUD, categories
 - **Containerization:** Docker
 - **Deployment:** Render
 - **CI:** GitHub Actions
-- Environment-based config (dev/prod): API docs, CORS, error handling
+- **Environment Config (dev/prod):** API docs, CORS, error handling
+
+---
+
+## Architecture
+
+採 Manager-Worker 分層：Manager 掌交易邊界（commit/rollback），Worker 專注 SQL 執行。
+連線生命週期為 per-request — 每個請求透過 `get_manager` 依賴注入取得獨立的 connection 與 cursor，請求結束即關閉，確保交易邊界逐請求隔離、無跨請求共用狀態。
+
+```mermaid
+flowchart TD
+    Client([Client])
+    Client -->|HTTP| Routes
+
+    Routes["routes/<br/>auth · tasks · categories · tags"]
+    Config["config.py — env / SECRET_KEY（SSOT）"]
+    Deps["dependencies.py"]
+    GetMgr["get_manager()<br/>每請求 new 一個 Manager<br/>用完 close()"]
+    Mgr["Manager（每請求一個實例）<br/>自己的 connection + cursor<br/>掌交易邊界 commit/rollback"]
+    Workers["workers/<br/>user · task · category · tag<br/>各拿這個請求的 cursor"]
+    DB[(PostgreSQL)]
+
+    Routes -.->|Depends get_current_user：JWT 驗證| Deps
+    Routes -.->|Depends get_manager| GetMgr
+    Config -.-> Deps
+    Config -.-> Mgr
+    GetMgr --> Mgr
+    Mgr --> Workers
+    Workers -->|cursor.execute| DB
+```
+
+---
+
+## Database Schema (ERD)
+
+五張表：`users`、`categories`、`tags`、`tasks`、`task_tags`。
+`tasks` 透過 FK 連到 `users` 與 `categories`；`task_tags` 為 tasks 與 tags 的多對多 junction table，複合主鍵 `(task_id, tag_id)`，刪除 task 時級聯刪除關聯。
+
+```mermaid
+erDiagram
+    users {
+        bigserial user_id PK
+        varchar user_name UK
+        varchar password_hash
+        timestamptz created_at
+        timestamptz updated_at
+    }
+    categories {
+        bigserial category_id PK
+        varchar category_name UK
+        timestamptz created_at
+        timestamptz updated_at
+    }
+    tags {
+        bigserial tag_id PK
+        varchar tag_name UK
+        timestamptz created_at
+        timestamptz updated_at
+    }
+    tasks {
+        bigserial task_id PK
+        varchar title
+        text description
+        varchar status "CHECK: todo/in_progress/done"
+        varchar priority "CHECK: low/medium/high"
+        timestamp due_date
+        bigint user_id FK
+        bigint category_id FK
+        timestamptz created_at
+        timestamptz updated_at
+    }
+    task_tags {
+        bigint task_id PK,FK
+        bigint tag_id PK,FK
+        timestamptz created_at
+    }
+
+    users ||--o{ tasks : "owns"
+    categories ||--o{ tasks : "categorizes"
+    tasks ||--o{ task_tags : ""
+    tags ||--o{ task_tags : ""
+```
 
 ---
 
@@ -34,7 +118,7 @@ task-flow/
 │       └── test.yml        # CI: auto run tests
 ├── main.py
 ├── config.py           # Environment variables (SSOT)
-├── manager.py          # Manager (business logic)
+├── manager.py          # Manager (business logic) + get_manager dependency
 ├── database.py
 ├── schemas.py
 ├── dependencies.py     # JWT token verification
