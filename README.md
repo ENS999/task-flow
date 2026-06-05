@@ -2,7 +2,7 @@
 
 [![Run Tests](https://github.com/ENS999/task-flow/actions/workflows/test.yml/badge.svg)](https://github.com/ENS999/task-flow/actions/workflows/test.yml)
 
-任務管理系統，透過 FastAPI 實現 RESTful API。功能包含：任務 CRUD、分類與標籤管理、狀態流轉控制（done 不可回退）、篩選 / 排序 / 分頁、JWT 認證與授權、13 項整合測試。
+任務管理系統，透過 FastAPI 實現 RESTful API。功能包含：任務 CRUD、分類與標籤管理、狀態流轉控制（done 不可回退）、篩選 / 排序 / 分頁、JWT 認證與授權、13 項整合測試與 Playwright 端對端測試。
 
 A task management API built with FastAPI. Features include task CRUD, categories, tags, status flow control (todo → in_progress → done), filtering, sorting, pagination, and JWT authentication.
 
@@ -20,7 +20,7 @@ A task management API built with FastAPI. Features include task CRUD, categories
 - **Database:** PostgreSQL
 - **Authentication:** JWT (python-jose + passlib bcrypt)
 - **Validation:** Pydantic
-- **Testing:** pytest (13 tests)
+- **Testing:** pytest (13 integration tests) + Playwright (E2E)
 - **Containerization:** Docker
 - **Deployment:** Render
 - **CI:** GitHub Actions
@@ -132,7 +132,9 @@ task-flow/
 │   ├── categories.py
 │   ├── tasks.py
 │   └── tags.py
-├── test_app.py         # pytest test cases
+├── test_app.py         # pytest integration tests
+├── conftest.py         # E2E fixtures (server / clean_db / api)
+├── test_e2e.py         # Playwright E2E test
 ├── Dockerfile
 ├── requirements.txt
 ├── .env.example
@@ -205,8 +207,30 @@ Open browser: http://localhost:8000/docs
 
 ---
 
-## Run Tests
+## Tests
+
+兩層測試：
+
+- **Integration（`test_app.py`，13 項）** — 透過 pytest + TestClient 在 process 內驗證每個 endpoint 的行為與狀態碼。
+- **E2E（`test_e2e.py`，Playwright）** — 啟動真實 server（subprocess），從獨立 process 走真實 HTTP 打 API，驗證完整使用者旅程（register → login → 建立 category → 建立 task → 讀回）。與 integration 的差異在於通道從 process 內呼叫變成跨 process 的真實 HTTP。
+
+**測試資料隔離設計：**
+
+- 測試連向獨立的 `taskflow_test` 資料庫，與開發 / production 資料完全分開。
+- 跨 process 切換資料庫：server 子 process 透過 `env=` 注入、test process 透過 `os.environ` 切換（兩個 process 各切一次）。
+- 每個 test 執行前自動清空資料表（autouse fixture，依外鍵順序 DELETE），確保 test 之間零污染。
+- CI 上每次跑都由 GitHub Actions 起一個全新的 PostgreSQL 容器，跑完即銷毀，達到跑次之間的完全隔離。
+
+### How to Run
 
 ```
-pytest test_app.py -v
+pytest test_app.py -v      # integration tests
+pytest test_e2e.py -v      # E2E tests
+pytest -v                  # run all
 ```
+
+### Test Report
+
+E2E 測試報告（pytest-html 產生）：
+
+![E2E Test Report](test_e2e_report.png)
