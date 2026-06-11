@@ -231,6 +231,10 @@ def test_get_task():
     category_id, task_id, tag_id, headers = get_category_task_tag("test_get_task", "learn5", "test5", "todo", "low", "test_tag5")
     response = client.get(f"/tasks/{task_id}", headers=headers)
     assert response.status_code == 200
+    data = response.json()
+    assert isinstance(data, dict)
+    assert data['task_id'] == task_id
+    assert data['status'] == "todo"
 
     response = client.get(f"/tasks/{task_id}")
     assert response.status_code == 401

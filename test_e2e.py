@@ -30,3 +30,4 @@ def test_user_journey(api):
 
     get_task = api.get(f"/tasks/{task_id}", headers=headers)
     assert get_task.status == 200
+    assert get_task.json()['title'] == "first e2e task"
