@@ -7,7 +7,7 @@ class TagWorker():
             "INSERT INTO tags (tag_name) VALUES (%s) RETURNING tag_id",
             (tag_name,)
         )
-        tag_id = self.cursor.fetchone()[0]
+        tag_id = self.cursor.fetchone()['tag_id']
         return tag_id
 
     def get_tags(self):

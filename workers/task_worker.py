@@ -15,7 +15,7 @@ class TaskWorker():
             "INSERT INTO tasks (title, description, status, priority, due_date, user_id, category_id) VALUES (%s, %s, %s, %s, %s, %s, %s) RETURNING task_id",
             (title, description, status, priority, due_date, user_id, category_id)
         )
-        task_id = self.cursor.fetchone()[0]
+        task_id = self.cursor.fetchone()['task_id']
         return task_id
 
     def get_tasks(self, user_id, status, priority, due_date, category_id, sort_by, sort_order, page, limit):

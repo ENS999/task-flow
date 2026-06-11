@@ -1,6 +1,7 @@
 import os
 import psycopg2
 from dotenv import load_dotenv
+from psycopg2.extras import RealDictCursor
 
 load_dotenv()
 
@@ -20,7 +21,7 @@ class Database():
             )
 
     def get_cursor(self):
-        return self.connection.cursor()
+        return self.connection.cursor(cursor_factory=RealDictCursor)
     
     def close(self):
         self.connection.close()

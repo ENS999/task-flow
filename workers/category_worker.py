@@ -7,7 +7,7 @@ class CategoryWorker():
             "INSERT INTO categories (category_name) VALUES (%s) RETURNING category_id",
             (category_name,)
         )
-        result = self.cursor.fetchone()[0]
+        result = self.cursor.fetchone()['category_id']
         return result
 
     def get_categories(self):

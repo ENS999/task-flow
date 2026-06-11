@@ -12,7 +12,7 @@ class UserWorker:
             "INSERT INTO users (user_name, password_hash) VALUES (%s, %s) RETURNING user_id",
             (user_name, hashed_password)
         )
-        user_id = self.cursor.fetchone()[0]
+        user_id = self.cursor.fetchone()['user_id']
         return user_id
 
     def verify_user(self, user_name, password):
@@ -23,7 +23,7 @@ class UserWorker:
         result = self.cursor.fetchone()
         if result is None:
             return None
-        ps_result = pwd_context.verify(password, result[1])
+        ps_result = pwd_context.verify(password, result['password_hash'])
         if not ps_result:
             return None
-        return result[0]
+        return result['user_id']

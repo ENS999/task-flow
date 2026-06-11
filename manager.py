@@ -149,7 +149,7 @@ class Manager:
             old_status = self.task_worker.get_task(task_id, user_id)
             if old_status is None:
                 return "task not found"
-            elif old_status[3] == "done":
+            elif old_status['status'] == "done":
                 return "done not update"
             result = self.task_worker.put_task(task_id, title, description, status, priority, due_date, user_id, category_id)
             if result is None:
